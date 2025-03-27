@@ -1,8 +1,8 @@
-name: ninkai-daynightcycle
+name: daynightcycle
 version: '1.0-SNAPSHOT'
-main: org.ninkai.daynightcycle.NinkaiDayNightCycle
+main: org.ninkai.daynightcycle.DayNightCycle
 api-version: '1.21'
 prefix: NDNC
 authors: [ POULPYY ]
 description: Ninkai RP Server plugin for day and night cycle aligned on IRL time
-website: github.com/poulpy2k
+website: https://github.com/poulpy2k
