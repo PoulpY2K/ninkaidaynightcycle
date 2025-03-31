@@ -61,7 +61,7 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
-tasks.withType(AbstractRun::class) {
+tasks.withType(AbstractRun).configureEach {
     javaLauncher = javaToolchains.launcherFor {
         vendor = JvmVendorSpec.JETBRAINS
         languageVersion = JavaLanguageVersion.of(21)
