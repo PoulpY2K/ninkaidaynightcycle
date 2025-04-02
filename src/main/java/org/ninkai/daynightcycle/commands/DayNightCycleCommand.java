@@ -5,10 +5,10 @@ import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ninkai.daynightcycle.DayNightCycle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public class DayNightCycleCommand implements TabExecutor {
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_RELOAD:
                 // Reload the plugin configuration
-                DayNightCycle plugin = (DayNightCycle) sender.getServer().getPluginManager().getPlugin(DAYNIGHTCYCLE_PLUGIN_NAME);
+                Plugin plugin = sender.getServer().getPluginManager().getPlugin(DAYNIGHTCYCLE_PLUGIN_NAME);
                 if (plugin != null) {
                     plugin.reloadConfig();
                 }
