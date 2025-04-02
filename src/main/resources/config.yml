@@ -1,0 +1,6 @@
+enabled: false
+timezone: ""
+weather:
+  enabled: false
+  api_key: ""
+  city: ""

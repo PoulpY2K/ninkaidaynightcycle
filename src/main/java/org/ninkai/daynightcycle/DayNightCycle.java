@@ -10,8 +10,17 @@ import static org.ninkai.daynightcycle.commands.DayNightCycleConstants.DAYNIGHTC
 public final class DayNightCycle extends JavaPlugin {
 
     @Override
+    public void onLoad() {
+        // Plugin setup logic
+        // Load the default config file
+        saveDefaultConfig();
+    }
+
+    @Override
     public void onEnable() {
         // Plugin startup logic
+        // Register the command
+
         Objects.requireNonNull(getCommand(DAYNIGHTCYCLE_COMMAND)).setExecutor(new DayNightCycleCommand());
     }
 
