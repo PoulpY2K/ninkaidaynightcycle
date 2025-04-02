@@ -7,3 +7,9 @@ authors: [ POULPYY ]
 description: Ninkai RP Server plugin for day and night cycle aligned on IRL time
 website: https://github.com/poulpy2k
 default-permissions: op
+commands:
+    daynightcycle:
+        description: Gives a break down of the plugin and its usages
+        aliases: [ dnc ]
+        permission: daynightcycle
+        permission-message: Vous n'avez pas la permission d'utiliser cette commande.

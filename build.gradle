@@ -1,11 +1,9 @@
 import xyz.jpenilla.runtask.task.AbstractRun
-import xyz.jpenilla.resourcefactory.bukkit.Permission.Default
 
 plugins {
     id 'java'
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.16" // Check for new versions at https://plugins.gradle.org/plugin/io.papermc.paperweight.userdev
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("xyz.jpenilla.resource-factory-bukkit-convention") version "1.2.0"
     id "jacoco"
     id "org.sonarqube" version "6.1.0.5360"
 }
@@ -14,17 +12,6 @@ group = 'org.ninkai'
 version = '1.0-SNAPSHOT'
 description = "Ninkai RP Server plugin for day and night cycle aligned on IRL time"
 def paperVersion = "1.20.1-R0.1-SNAPSHOT"
-
-bukkitPluginYaml {
-    // Defaults for name, version, and description are inherited from the Gradle project
-    main.set("org.ninkai.daynightcycle.NinkaiDayNightCycle")
-    apiVersion.set("1.20")
-    prefix.set("NinkaiDayNightCycle")
-    authors.add("POULPYY")
-    description.set("Ninkai RP Server plugin for day and night cycle aligned on IRL time")
-    website.set("https://github.com/poulpy2k")
-    defaultPermission.set(Default.OP)
-}
 
 sonar {
     properties {
