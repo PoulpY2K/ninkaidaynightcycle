@@ -6,6 +6,8 @@ import lombok.Getter;
 public final class DayNightCycleConstants {
     private DayNightCycleConstants() {}
 
+    // Command and permission constants
+    public static final String DAYNIGHTCYCLE_PLUGIN_NAME = "daynightcycle";
     public static final String DAYNIGHTCYCLE_PERMISSION = "daynightcycle";
     public static final String DAYNIGHTCYCLE_COMMAND = "daynightcycle";
     public static final String DAYNIGHTCYCLE_SUBCOMMAND_INIT = "init";

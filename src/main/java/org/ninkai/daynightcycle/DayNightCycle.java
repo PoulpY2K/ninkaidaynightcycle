@@ -18,9 +18,11 @@ public class DayNightCycle extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
+        // Plugin startup
+        // Create the command
+        DayNightCycleCommand command = new DayNightCycleCommand();
         // Register the command
-        Objects.requireNonNull(getCommand(DAYNIGHTCYCLE_COMMAND)).setExecutor(new DayNightCycleCommand(this));
+        Objects.requireNonNull(getCommand(DAYNIGHTCYCLE_COMMAND)).setExecutor(command);
     }
 
     @Override

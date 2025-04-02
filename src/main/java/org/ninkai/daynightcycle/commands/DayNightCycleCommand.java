@@ -17,12 +17,6 @@ import static org.ninkai.daynightcycle.commands.DayNightCycleConstants.*;
 
 public class DayNightCycleCommand implements TabExecutor {
 
-    private final DayNightCycle plugin;
-
-    public DayNightCycleCommand(DayNightCycle plugin) {
-        this.plugin = plugin;
-    }
-
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         // Check if the sender has permission to use the command
@@ -72,7 +66,10 @@ public class DayNightCycleCommand implements TabExecutor {
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_RELOAD:
                 // Reload the plugin configuration
-                plugin.reloadConfig();
+                DayNightCycle plugin = (DayNightCycle) sender.getServer().getPluginManager().getPlugin(DAYNIGHTCYCLE_PLUGIN_NAME);
+                if (plugin != null) {
+                    plugin.reloadConfig();
+                }
                 sender.sendMessage("Day-night cycle configuration reloaded.");
                 break;
             default:

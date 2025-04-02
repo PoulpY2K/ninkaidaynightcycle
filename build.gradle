@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'org.ninkai'
-version = '1.0-SNAPSHOT'
+version = '0.0.2-SNAPSHOT'
 description = "Ninkai RP Server plugin for day and night cycle aligned on IRL time"
 def paperVersion = "1.20.1-R0.1-SNAPSHOT"
 
