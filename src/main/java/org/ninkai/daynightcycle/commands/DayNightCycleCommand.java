@@ -42,7 +42,7 @@ public class DayNightCycleCommand implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         // Check if args are present
         if (args.length == 0) {
-            sender.sendMessage("Usage: /daynightcycle <init|start|stop|status|reload>");
+            sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_USAGE);
             return false;
         }
 
@@ -51,18 +51,18 @@ public class DayNightCycleCommand implements TabExecutor {
         switch (args[0].toLowerCase()) {
             case DAYNIGHTCYCLE_SUBCOMMAND_INIT:
                 server.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false));
-                sender.sendMessage("Day-night cycle initialized. Use /daynightcycle start to begin.");
+                sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_INIT);
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_START:
                 server.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false));
-                sender.sendMessage("Day-night cycle started. Use /daynightcycle status to check current time status.");
+                sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_START);
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_STOP:
                 server.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true));
-                sender.sendMessage("Day-night cycle stopped. Back to normal Minecraft day-night cycle.");
+                sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_STOP);
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_STATUS:
-                sender.sendMessage("Day-night cycle is currently " + (server.getWorlds().getFirst().getGameRuleValue(GameRule.DO_DAYLIGHT_CYCLE)));
+                sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_STATUS + (server.getWorlds().getFirst().getGameRuleValue(GameRule.DO_DAYLIGHT_CYCLE)));
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_RELOAD:
                 // Reload the plugin configuration
@@ -70,10 +70,10 @@ public class DayNightCycleCommand implements TabExecutor {
                 if (plugin != null) {
                     plugin.reloadConfig();
                 }
-                sender.sendMessage("Day-night cycle configuration reloaded.");
+                sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_RELOAD);
                 break;
             default:
-                sender.sendMessage("Unknown command. Usage: /daynightcycle <init|start|stop|status>");
+                sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_UNKNOWN);
                 return false;
         }
 

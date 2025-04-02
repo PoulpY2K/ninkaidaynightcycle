@@ -6,6 +6,7 @@ import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.plugin.Plugin;
 import org.junit.jupiter.api.*;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.ninkai.daynightcycle.commands.DayNightCycleConstants.*;
 
 class DayNightCycleCommandTest {
 
@@ -31,7 +33,7 @@ class DayNightCycleCommandTest {
         plugin = MockBukkit.load(DayNightCycle.class);
         sender = server.addPlayer();
         sender.setOp(true);
-        PluginCommand pluginCommand = plugin.getCommand("daynightcycle");
+        PluginCommand pluginCommand = plugin.getCommand(DAYNIGHTCYCLE_COMMAND);
         assertNotNull(pluginCommand);
         command = pluginCommand;
     }
@@ -43,40 +45,101 @@ class DayNightCycleCommandTest {
 
     @ParameterizedTest
     @MethodSource("provideCommands")
-    void testOnCommandInit(String[] expectedCommand, String expectedMessage) {
-        boolean result = command.execute(sender, "daynightcycle", expectedCommand);
+    void testOnCommand(String[] expectedCommand, String expectedMessage) {
+        boolean result = command.execute(sender, DAYNIGHTCYCLE_COMMAND, expectedCommand);
         assertTrue(result);
         assertEquals(expectedMessage, ((PlayerMock) sender).nextMessage());
+    }
+
+
+    public static Stream<Arguments> provideCommands() {
+        return Stream.of(
+                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_INIT}, DAYNIGHTCYCLE_MESSAGE_INIT),
+                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_START}, DAYNIGHTCYCLE_MESSAGE_START),
+                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STOP}, DAYNIGHTCYCLE_MESSAGE_STOP),
+                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STATUS}, DAYNIGHTCYCLE_MESSAGE_STATUS + "true")
+        );
+    }
+
+    @Test
+    void testOnCommandReload() {
+        String[] args = {DAYNIGHTCYCLE_SUBCOMMAND_RELOAD};
+        boolean result = command.execute(sender, DAYNIGHTCYCLE_COMMAND, args);
+        assertTrue(result);
+
+        Plugin localPlugin = sender.getServer().getPluginManager().getPlugin(DAYNIGHTCYCLE_PLUGIN_NAME);
+        // Reload config
+        assertNotNull(localPlugin);
+        localPlugin.reloadConfig();
+
+        assertEquals(DAYNIGHTCYCLE_MESSAGE_RELOAD, ((PlayerMock) sender).nextMessage());
+    }
+
+    @Test
+    void testOnEmptyCommand() {
+        String[] args = {};
+        boolean result = command.execute(sender, DAYNIGHTCYCLE_COMMAND, args);
+        assertFalse(result);
+        assertEquals(DAYNIGHTCYCLE_MESSAGE_USAGE, ((PlayerMock) sender).nextMessage());
     }
 
     @Test
     void testOnUnknownCommand() {
         String[] args = {"unknown"};
-        boolean result = command.execute(sender, "daynightcycle", args);
+        boolean result = command.execute(sender, DAYNIGHTCYCLE_COMMAND, args);
         assertFalse(result);
-        assertEquals("Unknown command. Usage: /daynightcycle <init|start|stop|status>", ((PlayerMock) sender).nextMessage());
-    }
-
-    public static Stream<Arguments> provideCommands() {
-        return Stream.of(
-                Arguments.of(new String[]{"init"}, "Day-night cycle initialized. Use /daynightcycle start to begin."),
-                Arguments.of(new String[]{"start"}, "Day-night cycle started. Use /daynightcycle status to check current time status."),
-                Arguments.of(new String[]{"stop"}, "Day-night cycle stopped. Back to normal Minecraft day-night cycle."),
-                Arguments.of(new String[]{"status"}, "Day-night cycle is currently true"),
-                Arguments.of(new String[]{"reload"}, "Day-night cycle configuration reloaded.")
-                );
+        assertEquals(DAYNIGHTCYCLE_MESSAGE_UNKNOWN, ((PlayerMock) sender).nextMessage());
     }
 
     @Test
     void testOnTabComplete() {
+        // Check sender permission
+        assertTrue(sender.hasPermission(DAYNIGHTCYCLE_PERMISSION));
+
+        // Check command completion
         DayNightCycleCommand executor = new DayNightCycleCommand();
         String[] args = {""};
-        List<String> completions = executor.onTabComplete(sender, command, "daynightcycle", args);
+        List<String> completions = executor.onTabComplete(sender, command, DAYNIGHTCYCLE_COMMAND, args);
+        // Assert that the completions contain the expected subcommands
         assertNotNull(completions);
-        assertTrue(completions.contains("init"));
-        assertTrue(completions.contains("start"));
-        assertTrue(completions.contains("stop"));
-        assertTrue(completions.contains("status"));
-        assertTrue(completions.contains("reload"));
+        assertTrue(completions.contains(DAYNIGHTCYCLE_SUBCOMMAND_INIT));
+        assertTrue(completions.contains(DAYNIGHTCYCLE_SUBCOMMAND_START));
+        assertTrue(completions.contains(DAYNIGHTCYCLE_SUBCOMMAND_STOP));
+        assertTrue(completions.contains(DAYNIGHTCYCLE_SUBCOMMAND_STATUS));
+        assertTrue(completions.contains(DAYNIGHTCYCLE_SUBCOMMAND_RELOAD));
+    }
+
+    @Test
+    void testOnTabCompleteNoPermissions() {
+        // Set player not op
+        sender.setOp(false);
+
+        // Check sender permission
+        assertFalse(sender.hasPermission(DAYNIGHTCYCLE_PERMISSION));
+
+        // Check command completion
+        DayNightCycleCommand executor = new DayNightCycleCommand();
+        String[] args = {""};
+        assertNotNull(args);
+        assertEquals(1, args.length);
+        List<String> completions = executor.onTabComplete(sender, command, DAYNIGHTCYCLE_COMMAND, args);
+        // Assert empty array
+        assertNotNull(completions);
+        assertTrue(completions.isEmpty());
+    }
+
+    @Test
+    void testOnTabCompleteEmpty() {
+        // Check sender permission
+        assertTrue(sender.hasPermission(DAYNIGHTCYCLE_PERMISSION));
+
+        // Check command completion
+        DayNightCycleCommand executor = new DayNightCycleCommand();
+        String[] args = {};
+        assertEquals(0, args.length);
+        List<String> completions = executor.onTabComplete(sender, command, DAYNIGHTCYCLE_COMMAND, args);
+        // Assert empty array
+        assertNotNull(completions);
+        assertTrue(completions.isEmpty());
     }
 }
