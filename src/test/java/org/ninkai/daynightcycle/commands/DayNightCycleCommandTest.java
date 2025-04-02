@@ -69,7 +69,7 @@ class DayNightCycleCommandTest {
 
     @Test
     void testOnTabComplete() {
-        DayNightCycleCommand executor = new DayNightCycleCommand();
+        DayNightCycleCommand executor = new DayNightCycleCommand(plugin);
         String[] args = {""};
         List<String> completions = executor.onTabComplete(sender, command, "daynightcycle", args);
         assertNotNull(completions);

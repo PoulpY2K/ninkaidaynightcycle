@@ -20,7 +20,7 @@ public class DayNightCycle extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         // Register the command
-        Objects.requireNonNull(getCommand(DAYNIGHTCYCLE_COMMAND)).setExecutor(new DayNightCycleCommand());
+        Objects.requireNonNull(getCommand(DAYNIGHTCYCLE_COMMAND)).setExecutor(new DayNightCycleCommand(this));
     }
 
     @Override

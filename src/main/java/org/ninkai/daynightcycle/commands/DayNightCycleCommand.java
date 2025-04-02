@@ -8,6 +8,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ninkai.daynightcycle.DayNightCycle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,13 @@ import java.util.List;
 import static org.ninkai.daynightcycle.commands.DayNightCycleConstants.*;
 
 public class DayNightCycleCommand implements TabExecutor {
+
+    private final DayNightCycle plugin;
+
+    public DayNightCycleCommand(DayNightCycle plugin) {
+        this.plugin = plugin;
+    }
+
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         // Check if the sender has permission to use the command
@@ -63,6 +71,8 @@ public class DayNightCycleCommand implements TabExecutor {
                 sender.sendMessage("Day-night cycle is currently " + (server.getWorlds().getFirst().getGameRuleValue(GameRule.DO_DAYLIGHT_CYCLE)));
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_RELOAD:
+                // Reload the plugin configuration
+                plugin.reloadConfig();
                 sender.sendMessage("Day-night cycle configuration reloaded.");
                 break;
             default:
