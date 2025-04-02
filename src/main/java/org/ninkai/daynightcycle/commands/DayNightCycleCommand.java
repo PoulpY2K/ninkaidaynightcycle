@@ -3,16 +3,37 @@ package org.ninkai.daynightcycle.commands;
 import org.bukkit.GameRule;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
+import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
-import org.ninkai.daynightcycle.DayNightCycle;
+import org.jetbrains.annotations.Nullable;
 
-public class DayNightCycleCommand implements CommandExecutor {
-    private final DayNightCycle plugin;
+import java.util.ArrayList;
+import java.util.List;
 
-    public DayNightCycleCommand(DayNightCycle plugin) {
-        this.plugin = plugin;
+import static org.ninkai.daynightcycle.commands.DayNightCycleConstants.*;
+
+public class DayNightCycleCommand implements TabExecutor {
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        // Check if the sender has permission to use the command
+        if (!sender.hasPermission(DAYNIGHTCYCLE_PERMISSION)) {
+            return List.of();
+        } else {
+            final List<String> availableArguments = new ArrayList<>();
+            if (args.length == 1) {
+                StringUtil.copyPartialMatches(args[0], List.of(
+                        DAYNIGHTCYCLE_SUBCOMMAND_INIT,
+                        DAYNIGHTCYCLE_SUBCOMMAND_START,
+                        DAYNIGHTCYCLE_SUBCOMMAND_STOP,
+                        DAYNIGHTCYCLE_SUBCOMMAND_STATUS,
+                        DAYNIGHTCYCLE_SUBCOMMAND_RELOAD), availableArguments);
+                return availableArguments;
+            }
+        }
+
+        return List.of();
     }
 
     @Override
@@ -26,22 +47,22 @@ public class DayNightCycleCommand implements CommandExecutor {
         Server server = sender.getServer();
         // Set doDaylightCycle to false
         switch (args[0].toLowerCase()) {
-            case "init":
+            case DAYNIGHTCYCLE_SUBCOMMAND_INIT:
                 server.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false));
                 sender.sendMessage("Day-night cycle initialized. Use /daynightcycle start to begin.");
                 break;
-            case "start":
+            case DAYNIGHTCYCLE_SUBCOMMAND_START:
                 server.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false));
                 sender.sendMessage("Day-night cycle started. Use /daynightcycle status to check current time status.");
                 break;
-            case "stop":
+            case DAYNIGHTCYCLE_SUBCOMMAND_STOP:
                 server.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true));
                 sender.sendMessage("Day-night cycle stopped. Back to normal Minecraft day-night cycle.");
                 break;
-            case "status":
+            case DAYNIGHTCYCLE_SUBCOMMAND_STATUS:
                 sender.sendMessage("Day-night cycle is currently " + (server.getWorlds().getFirst().getGameRuleValue(GameRule.DO_DAYLIGHT_CYCLE)));
                 break;
-            case "reload":
+            case DAYNIGHTCYCLE_SUBCOMMAND_RELOAD:
                 sender.sendMessage("Day-night cycle configuration reloaded.");
                 break;
             default:
