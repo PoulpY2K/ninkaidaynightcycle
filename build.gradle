@@ -2,8 +2,6 @@ import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
     id 'java'
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.16"
-    // Check for new versions at https://plugins.gradle.org/plugin/io.papermc.paperweight.userdev
     id("xyz.jpenilla.run-paper") version "2.3.1"
     id "jacoco"
     id "org.sonarqube" version "6.1.0.5360"
@@ -37,11 +35,10 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
-    paperweight.paperDevBundle("$paperVersion")
     implementation("com.google.guava:guava:33.4.6-jre")
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.mockito:mockito-core:5.16.1")
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.46.0")
 }
 
 def targetJavaVersion = 21
@@ -57,6 +54,7 @@ java {
 test {
     maxParallelForks = 3
     useJUnitPlatform()
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
 }
 
 tasks {
@@ -93,10 +91,6 @@ tasks.withType(ProcessResources).configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-tasks.assemble {
-    dependsOn(reobfJar)
-}
-
 processResources {
     def props = [version: version]
     inputs.properties props
@@ -111,3 +105,15 @@ jacocoTestReport {
         xml.required = true
     }
 }
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.8
+            }
+        }
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification

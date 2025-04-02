@@ -7,7 +7,7 @@ import java.util.Objects;
 
 import static org.ninkai.daynightcycle.commands.DayNightCycleConstants.DAYNIGHTCYCLE_COMMAND;
 
-public final class DayNightCycle extends JavaPlugin {
+public class DayNightCycle extends JavaPlugin {
 
     @Override
     public void onLoad() {
@@ -20,7 +20,6 @@ public final class DayNightCycle extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         // Register the command
-
         Objects.requireNonNull(getCommand(DAYNIGHTCYCLE_COMMAND)).setExecutor(new DayNightCycleCommand());
     }
 
