@@ -2,7 +2,7 @@ package org.ninkai.daynightcycle;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
@@ -11,7 +11,6 @@ import org.ninkai.daynightcycle.tasks.SyncTimeTask;
 
 import static org.ninkai.daynightcycle.utils.TimeUtils.*;
 
-import java.io.IOException;
 import java.time.ZoneId;
 import java.util.Objects;
 
@@ -22,37 +21,47 @@ import static org.ninkai.daynightcycle.utils.TimeUtils.convertTimeToTicks;
 @Setter
 public class DayNightCycle extends JavaPlugin {
 
-    //private DayNightCycleConfig config;
+    private DayNightCycleOptions pluginConfig;
     private BukkitTask timeSyncTask;
+    private BukkitScheduler scheduler;
 
     @Override
     public void onLoad() {
-        //Try to load the config file but if not present add the default config file
-        try {
-            getConfig().load("config.yml");
-        } catch (IOException e) {
-            getLogger().warning("Could not find plugins/daynightcycle/config.yml, creating file with default values.");
-            saveDefaultConfig();
-        } catch (InvalidConfigurationException e) {
-            getLogger().severe("Something went wrong when trying to read the config file. Please check the file.");
-        }
+        ConfigurationSerialization.registerClass(DayNightCycleOptions.class);
 
+        saveDefaultConfig();
         // Load the config file
-        //config = new DayNightCycleConfig(this);
+        try {
+            pluginConfig = DayNightCycleOptions.deserialize(getConfig().getValues(true));
+        } catch (NullPointerException e) {
+            throw new NullPointerException("Plugin is missing values in configuration. Please check the config.yml file or remove it to generate a new one. Using default config as fallback.");
+        }
     }
 
     @Override
     public void onEnable() {
+        if (pluginConfig == null) {
+            throw new NullPointerException("Plugin configuration is malformed. Please correct the config.yml file and use /reload or enable plugin.");
+        }
+
         // Create the command
         DayNightCycleCommand command = new DayNightCycleCommand();
         // Register the command
         Objects.requireNonNull(getCommand(DAYNIGHTCYCLE_COMMAND)).setExecutor(command);
 
-        // Set real time in first world
-        this.getServer().getWorlds().getFirst().setTime(convertTimeToTicks(getCurrentTime(ZoneId.systemDefault())));
+        // Set scheduler
+        scheduler = this.getServer().getScheduler();
 
-        BukkitScheduler scheduler = this.getServer().getScheduler();
-        timeSyncTask = scheduler.runTaskTimer(this, new SyncTimeTask(this), 0L, 72L);
+        // Set real time in worlds listed in config
+        ZoneId timezone = ZoneId.of(pluginConfig.getTimeZone());
+        getServer().getWorlds().stream()
+                .filter(world -> pluginConfig.getWorlds().contains(world.getName()))
+                .forEach(world ->
+                        world.setTime(convertTimeToTicks(getCurrentTime(timezone)))
+                );
+
+        // Create sync task
+        timeSyncTask = scheduler.runTaskTimer(this, new SyncTimeTask(this, pluginConfig.getWorlds()), 0L, 72L);
     }
 
     @Override

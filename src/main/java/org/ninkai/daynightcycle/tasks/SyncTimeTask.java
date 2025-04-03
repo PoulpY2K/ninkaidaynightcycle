@@ -1,28 +1,28 @@
 package org.ninkai.daynightcycle.tasks;
 
-import org.bukkit.World;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.ninkai.daynightcycle.DayNightCycle;
 
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
 public class SyncTimeTask implements Runnable {
 
     private final DayNightCycle plugin;
-    //private final DayNightCycleConfig config;
-
-    public SyncTimeTask(DayNightCycle plugin) {
-        this.plugin = plugin;
-        //this.config = plugin.getConfig();
-    }
+    private final List<String> worlds;
 
     @Override
     public void run() {
-        World mainWorld = plugin.getServer().getWorlds().getFirst();
-        plugin.getServer().getWorlds().forEach(world -> {
-            // Get the current time in the world
-            long worldTime = mainWorld.getTime();
-            // Set the time in the world
-            world.setTime(worldTime + 1L);
-            // Send a message to the console
-        });
-        plugin.getLogger().info("The time has been set to " + mainWorld.getTime());
+        plugin.getServer().getWorlds().stream()
+                // Filter the worlds to only those listed in the config
+                .filter(world -> worlds.contains(world.getName()))
+                // Set the time in the world
+                .forEach(world ->
+                    world.setTime(world.getTime() + 1L)
+                );
     }
 }
