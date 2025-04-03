@@ -1,5 +1,53 @@
+#    ,--.  ,--.,--.        ,--.           ,--.         ,------.  ,--.  ,--. ,-----.
+#    |  ,'.|  |`--',--,--, |  |,-. ,--,--.`--' ,-----. |  .-.  \ |  ,'.|  |'  .--./
+#    |  |' '  |,--.|      \|     /' ,-.  |,--. '-----' |  |  \  :|  |' '  ||  |
+#    |  | `   ||  ||  ||  ||  \  \\ '-'  ||  |         |  '--'  /|  | `   |'  '--'\
+#    `--'  `--'`--'`--''--'`--'`--'`--`--'`--'         `-------' `--'  `--' `-----'
+#
+#    Ninkai - DayNightCycle configuration file
+#
+# General Settings
+# ----------------
+# enabled: Enable or disable real-time synchronization on server startup.
+#          Set to 'true' to enable synchronization, or 'false' to disable.
 enabled: false
-timezone: ""
+
+# worlds: A list of worlds to synchronize with real-world time.
+#         If you want to synchronize all worlds, set this to '*'.
+#         If you want to synchronize specific worlds, set this to a comma-separated list of
+#         world names (e.g., "world,world_nether,world_the_end").
+worlds:
+  - world
+
+# timezone: The default time zone used for synchronization.
+#           This should be a valid  time zone ID (e.g., "Europe/Berlin"
+#           "America/New_York", etc.).
+#           Changing this via the in-game command /daynightcycle timezone [zone|auto] is
+#           easier, as it supports tab completion and allows for automatic synchronization
+#           with the server's time zone.
+timezone: Europe/Paris
+
+# time_offset: The time offset in hours to adjust the server time.
+#              This is useful if you want to set a specific time offset from the real-world
+#              time. For example, if you want the server to be 2 hours ahead of real-world
+#              time, set this to 2.
+time_offset: 0
+
+# hour_mode:     Enable or disable the hour mode for the day-night cycle.
+#                If the value is false, the server will update the time every ~4 real seconds.
+#                If the value is true, the server will update the time every interval_hour hours.
+hour_mode: false
+
+# interval_hour: The interval in hours for the hour mode.
+#                This value is only used if hour_mode is set to true.
+#                The default value is 1 hour.
+interval_hour: 1
+
+# fixed_time: The fixed time to set the server to when using the /daynightcycle set time <time> command.
+#             This should be a valid time string in the format "HH:mm" (e.g., "14:30" for 2:30 PM).
+fixed_time: ""
+
+# weather: WIP Weather API
 weather:
   enabled: false
   api_key: ""
