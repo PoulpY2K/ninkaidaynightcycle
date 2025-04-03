@@ -4,10 +4,11 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-public class TimeUtils {
+public class SyncTimeUtils {
 
-    private TimeUtils() {
+    private SyncTimeUtils() {
     }
+
 
     /**
      * Gets the current real time in the specified time zone.
@@ -15,9 +16,18 @@ public class TimeUtils {
      * @param zoneId The time zone to get the current time in.
      * @return The current real time in the specified time zone.
      */
-    public static ZonedDateTime getCurrentTime(ZoneId zoneId) {
+    public static ZonedDateTime getCurrentTimeWithOffset(ZoneId zoneId, int offset) {
         Instant instant = Instant.now();
-        return ZonedDateTime.ofInstant(instant, zoneId);
+        ZonedDateTime currentTime = ZonedDateTime.ofInstant(instant, zoneId);
+
+        // If offset is != 0 then add it or substract it to the current time
+        if (offset > 0)
+            currentTime = currentTime.plusHours(offset);
+        if (offset < 0)
+            currentTime = currentTime.minusHours(Math.abs(offset));
+
+
+        return currentTime;
     }
 
     /**

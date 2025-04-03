@@ -28,20 +28,17 @@ worlds:
 timezone: Europe/Paris
 
 # time_offset: The time offset in hours to adjust the server time.
-#              This is useful if you want to set a specific time offset from the real-world
-#              time. For example, if you want the server to be 2 hours ahead of real-world
-#              time, set this to 2.
+#              This is useful if you want to set a specific time offset from the real-world time.
+#              For example, if you want the server to be 2 hours ahead of real-world time, set this to 2.
+#              If you want the server to be 2 hours behind real-world time, set this to -2.
 time_offset: 0
 
-# hour_mode:     Enable or disable the hour mode for the day-night cycle.
-#                If the value is false, the server will update the time every ~4 real seconds.
-#                If the value is true, the server will update the time every interval_hour hours.
-hour_mode: false
-
-# interval_hour: The interval in hours for the hour mode.
-#                This value is only used if hour_mode is set to true.
-#                The default value is 1 hour.
-interval_hour: 1
+# low_lag:       Enable or disable the low lag mode for the day-night cycle.
+#                If enabled is false, the server will update the time every ~4 real seconds.
+#                If disabled is true, the server will update the time every interval_hour hours.
+low_lag:
+  enabled: false
+  interval_hour: 1
 
 # fixed_time: The fixed time to set the server to when using the /daynightcycle set time <time> command.
 #             This should be a valid time string in the format "HH:mm" (e.g., "14:30" for 2:30 PM).

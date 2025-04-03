@@ -7,8 +7,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -27,30 +28,23 @@ class DayNightCycleCommandTest {
     static CommandSender sender;
     static Command command;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUp() {
         server = MockBukkit.mock();
         plugin = MockBukkit.load(DayNightCycle.class);
+
         sender = server.addPlayer();
         sender.setOp(true);
+
         PluginCommand pluginCommand = plugin.getCommand(DAYNIGHTCYCLE_COMMAND);
         assertNotNull(pluginCommand);
         command = pluginCommand;
     }
 
-    @AfterEach
-    void tearDown() {
+    @AfterAll
+    static void tearDown() {
         MockBukkit.unmock();
     }
-
-    @ParameterizedTest
-    @MethodSource("provideCommands")
-    void testOnCommand(String[] expectedCommand, String expectedMessage) {
-        boolean result = command.execute(sender, DAYNIGHTCYCLE_COMMAND, expectedCommand);
-        assertTrue(result);
-        assertEquals(expectedMessage, ((PlayerMock) sender).nextMessage());
-    }
-
 
     public static Stream<Arguments> provideCommands() {
         return Stream.of(
@@ -59,6 +53,14 @@ class DayNightCycleCommandTest {
                 Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STOP}, DAYNIGHTCYCLE_MESSAGE_STOP),
                 Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STATUS}, DAYNIGHTCYCLE_MESSAGE_STATUS + "true")
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideCommands")
+    void testOnCommand(String[] expectedCommand, String expectedMessage) {
+        boolean result = command.execute(sender, DAYNIGHTCYCLE_COMMAND, expectedCommand);
+        assertTrue(result);
+        assertEquals(expectedMessage, ((PlayerMock) sender).nextMessage());
     }
 
     @Test

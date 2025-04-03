@@ -2,7 +2,10 @@ package org.ninkai.daynightcycle;
 
 import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 
 class DayNightCycleTest {
@@ -10,16 +13,16 @@ class DayNightCycleTest {
     static ServerMock server;
     static DayNightCycle plugin;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUp() {
         // Start the mock server
         server = MockBukkit.mock();
         // Load your plugin
         plugin = MockBukkit.load(DayNightCycle.class);
     }
 
-    @AfterEach
-    void tearDown() {
+    @AfterAll
+    static void tearDown() {
         // Stop the mock server
         MockBukkit.unmock();
     }
@@ -41,6 +44,8 @@ class DayNightCycleTest {
         plugin.setEnabled(false);
         // Check if the plugin is disabled
         Assertions.assertFalse(plugin.isEnabled(), "Plugin should be disabled");
+        // Reenables the plugin
+        plugin.setEnabled(true);
     }
 
     @Test

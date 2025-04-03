@@ -22,7 +22,7 @@ public class SyncTimeTask implements Runnable {
                 .filter(world -> worlds.contains(world.getName()))
                 // Set the time in the world
                 .forEach(world ->
-                    world.setTime(world.getTime() + 1L)
+                        world.setTime(world.getTime() + 1L)
                 );
     }
 }
