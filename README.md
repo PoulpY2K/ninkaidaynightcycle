@@ -1,4 +1,4 @@
-# Ninai - Day Night Cycle Plugin
+# Ninkai - Day Night Cycle Plugin
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 ![latest build](https://img.shields.io/github/actions/workflow/status/poulpy2k/ninkaidaynightcycle/gradle.yml
@@ -18,27 +18,46 @@ The plugin is made for a roleplay server called "Ninkai".
 
 It enables real time syncing to IRL time and weather.
 
+## Commands
+
+- /daynightcycle init - Initializes the plugin
+- /daynightcycle start - Start the day night cycle
+- /daynightcycle stop - Stop the day night cycle
+- /daynightcycle set time <time> - Set the time to a specific value and freeze it
+- /daynightcycle set timezone <timezone> - Set the timezone
+- /daynightcycle set weather <weather> - Set the weather to a specific value
+- /daynightcycle status - Gives the plugin status (initialized, running, timezone, time, weather, etc)
+- /daynightcycle reload - Reload the config
+
 ## Features
 
 - Real time syncing
 
 ## Run Locally
 
-Clone the project
+### Clone the project
 
 ```bash
   git clone https://github.com/PoulpY2K/ninkaidaynightcycle.git
 ```
 
-Go to the project directory
+### Go to the project directory
 
 ```bash
   cd ninkaidaynightcycle
 ```
 
-Open the project in your preferred Java/Kotlin IDE
+### Run the project
 
-Run the project
+#### With local gradle
+```bash
+  ./gradlew clean build runServer
+```
+
+#### With global gradle
+```bash
+  gradle clean build runServer
+```
 
 ## Authors
 

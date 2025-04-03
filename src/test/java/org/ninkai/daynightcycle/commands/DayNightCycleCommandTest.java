@@ -69,6 +69,7 @@ class DayNightCycleCommandTest {
 
         Plugin localPlugin = sender.getServer().getPluginManager().getPlugin(DAYNIGHTCYCLE_PLUGIN_NAME);
         // Reload config
+        assertNotNull(plugin);
         assertNotNull(localPlugin);
         localPlugin.reloadConfig();
 
