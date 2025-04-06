@@ -95,13 +95,13 @@ public class DayNightCycleCommand implements TabExecutor {
                 sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_INIT);
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_START:
-                if (plugin == null || plugin.getSyncTimeTask() == null) {
+                if (plugin == null || plugin.getServer().getScheduler().getPendingTasks().getFirst() != null) {
                     return false;
                 }
                 return executeStartCommand(plugin, sender);
             case DAYNIGHTCYCLE_SUBCOMMAND_STOP:
                 // Stop the task if it is running
-                if (plugin == null || plugin.getSyncTimeTask() == null) {
+                if (plugin == null || plugin.getServer().getScheduler().getPendingTasks().getFirst() == null) {
                     return false;
                 }
                 executeStopCommand(plugin, server);
@@ -138,7 +138,7 @@ public class DayNightCycleCommand implements TabExecutor {
         saveDayNightCycleConfig(plugin, plugin.getPluginConfig().serialize());
 
         // Check if the task is already running
-        if (!plugin.getSyncTimeTask().isCancelled()) {
+        if (!plugin.getServer().getScheduler().getPendingTasks().getFirst().isCancelled()) {
             sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_ALREADY_STARTED);
             return false;
         } else {
@@ -155,7 +155,7 @@ public class DayNightCycleCommand implements TabExecutor {
      * @param server The server instance.
      */
     private void executeStopCommand(DayNightCycle plugin, Server server) {
-        plugin.getSyncTimeTask().cancel();
+        plugin.getServer().getScheduler().cancelTasks(plugin);
         plugin.getPluginConfig().setEnabled(false);
         saveDayNightCycleConfig(plugin, plugin.getPluginConfig().serialize());
         // Set doDaylightCycle to true in all worlds included in pluginConfig
@@ -188,8 +188,7 @@ public class DayNightCycleCommand implements TabExecutor {
                 });
 
         // Create sync task
-        BukkitTask timeSyncTask = plugin.getScheduler().runTaskTimer(plugin, new SyncTimeRunnable(plugin, plugin.getPluginConfig().getWorlds()), 0L, DAYNIGHTCYCLE_CYCLE_REAL_SECOND);
-        plugin.setSyncTimeTask(timeSyncTask);
+        plugin.getServer().getScheduler().runTaskTimer(plugin, new SyncTimeRunnable(plugin, plugin.getPluginConfig().getWorlds()), 0L, DAYNIGHTCYCLE_CYCLE_REAL_SECOND);
 
         // Return time for logging purposes
         return finalCurrentTime;

@@ -37,11 +37,13 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
     implementation("com.google.guava:guava:33.4.6-jre")
 
-    testImplementation(platform("org.junit:junit-bom:5.12.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
-    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.46.0")
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.45.0")
+}
+
+test {
+    useJUnitPlatform()
 }
 
 def targetJavaVersion = 21
@@ -52,13 +54,6 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
-}
-
-test {
-    systemProperty("junit.jupiter.conditions.deactivate", "*")
-    useJUnitPlatform()
-    systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
-    systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
 }
 
 tasks {
