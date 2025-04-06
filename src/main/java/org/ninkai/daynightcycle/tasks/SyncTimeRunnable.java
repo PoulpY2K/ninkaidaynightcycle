@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
-public class SyncTimeTask implements Runnable {
+public class SyncTimeRunnable implements Runnable {
 
     private final DayNightCycle plugin;
     private final List<String> worlds;

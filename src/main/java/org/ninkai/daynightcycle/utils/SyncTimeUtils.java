@@ -16,7 +16,7 @@ public class SyncTimeUtils {
      * @param zoneId The time zone to get the current time in.
      * @return The current real time in the specified time zone.
      */
-    public static ZonedDateTime getCurrentTimeWithOffset(ZoneId zoneId, int offset) {
+    public static ZonedDateTime getInstantTimeWithOffset(ZoneId zoneId, int offset) {
         Instant instant = Instant.now();
         ZonedDateTime currentTime = ZonedDateTime.ofInstant(instant, zoneId);
 
