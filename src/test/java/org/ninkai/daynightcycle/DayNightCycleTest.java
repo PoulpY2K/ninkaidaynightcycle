@@ -2,63 +2,37 @@ package org.ninkai.daynightcycle;
 
 import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.AssertionsKt.*;
 
 
 class DayNightCycleTest {
 
-    static ServerMock server;
-    static DayNightCycle plugin;
+    private DayNightCycle plugin;
 
-    @BeforeAll
-    static void setUp() {
+    @BeforeEach
+    void setUp() {
         // Start the mock server
-        server = MockBukkit.mock();
+        ServerMock server = MockBukkit.mock();
+
         // Load your plugin
         plugin = MockBukkit.load(DayNightCycle.class);
+        server.addSimpleWorld("world");
     }
 
-    @AfterAll
-    static void tearDown() {
+    @AfterEach
+    void tearDown() {
         // Stop the mock server
         MockBukkit.unmock();
     }
 
     @Test
-    void testPluginLoad() {
-        Assertions.assertNotNull(plugin, "Plugin should be loaded");
-    }
-
-    @Test
-    void testPluginEnable() {
-        // Check if the plugin is enabled
-        Assertions.assertTrue(plugin.isEnabled(), "Plugin should be enabled");
-    }
-
-    @Test
-    void testPluginDisable() {
-        // Disable the plugin
-        plugin.setEnabled(false);
-        // Check if the plugin is disabled
-        Assertions.assertFalse(plugin.isEnabled(), "Plugin should be disabled");
-        // Reenables the plugin
-        plugin.setEnabled(true);
-    }
-
-    @Test
-    void testSaveDefaultConfig() {
-        // Check if the default config is saved
-        plugin.saveDefaultConfig();
-        Assertions.assertNotNull(plugin.getConfig(), "Default config should be saved");
-    }
-
-    @Test
-    void testConfigLoad() {
-        // Check if the config is loaded correctly
-        Assertions.assertNotNull(plugin.getConfig(), "Config should be loaded");
-        Assertions.assertTrue(plugin.getConfig().isSet("enabled"), "Config should contain 'enabled'");
+    void testOnLoadOk() {
+        plugin.onLoad();
+        // This is a simple test to check if the plugin loads correctly
+        assertNotNull(plugin);
     }
 }

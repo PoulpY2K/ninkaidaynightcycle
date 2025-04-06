@@ -10,7 +10,7 @@ plugins {
 
 group = 'org.ninkai'
 version = '0.0.2-SNAPSHOT'
-description = "Ninkai RP Server plugin for day and night cycle aligned on IRL time"
+description = "Ninkai RP Server plugin for day and night cycle aligned on real time"
 def paperVersion = "1.20.1-R0.1-SNAPSHOT"
 
 sonar {
@@ -36,8 +36,11 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
     implementation("com.google.guava:guava:33.4.6-jre")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.12.1")
+
+    testImplementation(platform("org.junit:junit-bom:5.12.1"))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
     testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.46.0")
 }
 
@@ -52,9 +55,10 @@ java {
 }
 
 test {
-    maxParallelForks = 3
+    systemProperty("junit.jupiter.conditions.deactivate", "*")
     useJUnitPlatform()
-    jvmArgs("-XX:+EnableDynamicAgentLoading")
+    systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
+    systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
 }
 
 tasks {

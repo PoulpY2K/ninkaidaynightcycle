@@ -61,7 +61,7 @@ public class DayNightCycle extends JavaPlugin {
      * Initializes the task to synchronize time in the specified worlds.
      * The task is scheduled to run at a fixed interval based on the cycle period.
      */
-    private void initializeSyncTimeTask() {
+    public void initializeSyncTimeTask() {
         ZoneId timezone = ZoneId.of(getPluginConfig().getTimeZone());
         int timeOffset = getPluginConfig().getTimeOffset();
         ZonedDateTime finalCurrentTime = getCurrentTimeWithOffset(timezone, timeOffset);
