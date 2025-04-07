@@ -38,9 +38,6 @@ public class DayNightCycle extends JavaPlugin {
         ConfigurationSerialization.registerClass(DayNightCycleOptions.class);
         saveDefaultConfig();
         loadConfiguration();
-
-        // Get the command from the plugin.yml
-        dayNightCycleCommand = getCommand(DAYNIGHTCYCLE_COMMAND);
     }
 
     /**
@@ -53,13 +50,14 @@ public class DayNightCycle extends JavaPlugin {
             throw new NullPointerException("Plugin configuration is malformed. Please fix the config.yml file and use /reload.");
         }
 
-        // Get plugin command and check if it exists
-        if (dayNightCycleCommand == null) {
-            throw new NullPointerException("Plugin command can't be found.");
-        }
+        // Get the command from the plugin.yml
+        dayNightCycleCommand = getCommand(DAYNIGHTCYCLE_COMMAND);
 
-        // Register the command executor
-        dayNightCycleCommand.setExecutor(new DayNightCycleCommand());
+        // Get plugin command and check if it exists
+        if (dayNightCycleCommand != null) {
+            // Register the command executor
+            dayNightCycleCommand.setExecutor(new DayNightCycleCommand());
+        }
 
         // Starts the time synchronization task if plugin is enabled in the config
         if (pluginConfig.getEnabled()) {

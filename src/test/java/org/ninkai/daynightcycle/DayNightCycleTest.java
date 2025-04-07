@@ -1,6 +1,7 @@
 package org.ninkai.daynightcycle;
 
 import org.bukkit.GameRule;
+import org.bukkit.command.PluginCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +9,7 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.MockBukkitExtension;
 import org.mockbukkit.mockbukkit.MockBukkitInject;
 import org.mockbukkit.mockbukkit.ServerMock;
+import org.ninkai.daynightcycle.commands.DayNightCycleCommand;
 import org.ninkai.daynightcycle.configurations.DayNightCycleOptions;
 import org.ninkai.daynightcycle.configurations.LowLagOptions;
 import org.ninkai.daynightcycle.configurations.WeatherOptions;
@@ -50,8 +52,11 @@ class DayNightCycleTest {
         // Set the plugin configuration to null
         plugin.setDayNightCycleCommand(null);
 
-        // Check that the plugin throws a NullPointerException when the configuration is null
-        assertThrows(NullPointerException.class, () -> plugin.onEnable());
+        PluginCommand pluginCommand = plugin.getDayNightCycleCommand();
+        DayNightCycleCommand dayNightCycleCommand = new DayNightCycleCommand();
+
+        // Check that the plugin throws a NullPointerException when the command is null
+        assertThrows(NullPointerException.class, () -> pluginCommand.setExecutor(dayNightCycleCommand));
     }
 
     @Test

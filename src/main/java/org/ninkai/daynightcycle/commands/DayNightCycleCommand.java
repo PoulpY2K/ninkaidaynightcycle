@@ -5,6 +5,7 @@ import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -94,13 +95,21 @@ public class DayNightCycleCommand implements TabExecutor {
                 sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_INIT);
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_START:
-                if (plugin == null || plugin.getServer().getScheduler().getPendingTasks().getFirst() != null) {
+                if (plugin == null) {
                     return false;
                 }
+
+                List<BukkitTask> pendingTasks = plugin.getServer().getScheduler().getPendingTasks();
+                if (!pendingTasks.isEmpty() && !pendingTasks.getFirst().isCancelled()) {
+                    sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_ALREADY_STARTED);
+                    return false;
+                }
+
                 return executeStartCommand(plugin, sender);
             case DAYNIGHTCYCLE_SUBCOMMAND_STOP:
                 // Stop the task if it is running
-                if (plugin == null || plugin.getServer().getScheduler().getPendingTasks().getFirst() == null) {
+                if (plugin == null || plugin.getServer().getScheduler().getPendingTasks().isEmpty()) {
+                    sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_ALREADY_STOPPED);
                     return false;
                 }
                 executeStopCommand(plugin, server);
@@ -133,17 +142,10 @@ public class DayNightCycleCommand implements TabExecutor {
      * @return true if the command was executed successfully, false otherwise.
      */
     private boolean executeStartCommand(DayNightCycle plugin, CommandSender sender) {
+        startTimeSyncTask(plugin, sender);
         plugin.getPluginConfig().setEnabled(true);
         saveDayNightCycleConfig(plugin, plugin.getPluginConfig().serialize());
-
-        // Check if the task is already running
-        if (!plugin.getServer().getScheduler().getPendingTasks().getFirst().isCancelled()) {
-            sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_ALREADY_STARTED);
-            return false;
-        } else {
-            startTimeSyncTask(plugin, sender);
-            return true;
-        }
+        return true;
     }
 
     /**
