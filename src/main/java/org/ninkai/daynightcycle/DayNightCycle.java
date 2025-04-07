@@ -1,8 +1,7 @@
 package org.ninkai.daynightcycle;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.bukkit.GameRule;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -22,20 +21,26 @@ import static org.ninkai.daynightcycle.utils.SyncTimeUtils.convertTimeToTicks;
 import static org.ninkai.daynightcycle.utils.SyncTimeUtils.getInstantTimeWithOffset;
 
 @Getter
+@Setter
 public class DayNightCycle extends JavaPlugin {
 
     private DayNightCycleOptions pluginConfig;
+    private PluginCommand dayNightCycleCommand;
 
     /**
      * Registers serialization classes for configuration options and loads the configuration.
      */
     @Override
     public void onLoad() {
+        // Register the serialization classes for the configuration options
         ConfigurationSerialization.registerClass(LowLagOptions.class);
         ConfigurationSerialization.registerClass(WeatherOptions.class);
         ConfigurationSerialization.registerClass(DayNightCycleOptions.class);
         saveDefaultConfig();
         loadConfiguration();
+
+        // Get the command from the plugin.yml
+        dayNightCycleCommand = getCommand(DAYNIGHTCYCLE_COMMAND);
     }
 
     /**
@@ -49,14 +54,12 @@ public class DayNightCycle extends JavaPlugin {
         }
 
         // Get plugin command and check if it exists
-        PluginCommand pluginCommand = getCommand(DAYNIGHTCYCLE_COMMAND);
-        if (pluginCommand == null) {
-            getLogger().warning("Plugin command is null. Please check the plugin.yml file.");
-            return;
+        if (dayNightCycleCommand == null) {
+            throw new NullPointerException("Plugin command can't be found.");
         }
 
         // Register the command executor
-        pluginCommand.setExecutor(new DayNightCycleCommand());
+        dayNightCycleCommand.setExecutor(new DayNightCycleCommand());
 
         // Starts the time synchronization task if plugin is enabled in the config
         if (pluginConfig.getEnabled()) {
@@ -75,29 +78,12 @@ public class DayNightCycle extends JavaPlugin {
     }
 
     /**
-     * Cancels the time synchronization task if it is running on disable.
-     */
-    @Override
-    public void onDisable() {
-        // Cancel the tasks if they are running
-        getServer().getScheduler().getPendingTasks().forEach(task -> {
-            if (task != null && !task.isCancelled()) {
-                task.cancel();
-            }
-        });
-    }
-
-    /**
      * Load the configuration from the config.yml file.
      * If the file is missing values, a NullPointerException is thrown.
      */
     public void loadConfiguration() {
         // Load the config file
-        try {
-            pluginConfig = DayNightCycleOptions.deserialize(getConfig().getValues(true));
-        } catch (NullPointerException e) {
-            throw new NullPointerException("Plugin is missing values in configuration. Please check the config.yml file or remove it to generate a new one.");
-        }
+        pluginConfig = DayNightCycleOptions.deserialize(getConfig().getValues(true));
     }
 
     /**

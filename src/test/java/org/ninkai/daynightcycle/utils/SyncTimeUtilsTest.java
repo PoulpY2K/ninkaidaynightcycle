@@ -5,18 +5,18 @@ import org.junit.jupiter.api.Test;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SyncTimeUtilsTest {
 
     @Test
     void getInstantTimeWithOffset() {
         // Test with positive offset
-        assertEquals(3, SyncTimeUtils.getInstantTimeWithOffset(ZoneId.of("Europe/Paris"), 2).getHour());
+        assertEquals(ZonedDateTime.now(ZoneId.of("Europe/Paris")).plusHours(2).getHour(), SyncTimeUtils.getInstantTimeWithOffset(ZoneId.of("Europe/Paris"), 2).getHour());
         // Test with negative offset
-        assertEquals(23, SyncTimeUtils.getInstantTimeWithOffset(ZoneId.of("Europe/Paris"), -2).getHour());
+        assertEquals(ZonedDateTime.now(ZoneId.of("Europe/Paris")).minusHours(2).getHour(), SyncTimeUtils.getInstantTimeWithOffset(ZoneId.of("Europe/Paris"), -2).getHour());
         // Test with zero offset
-        assertEquals(1, SyncTimeUtils.getInstantTimeWithOffset(ZoneId.of("Europe/Paris"), 0).getHour());
+        assertEquals(ZonedDateTime.now(ZoneId.of("Europe/Paris")).getHour(), SyncTimeUtils.getInstantTimeWithOffset(ZoneId.of("Europe/Paris"), 0).getHour());
     }
 
     @Test

@@ -1,14 +1,18 @@
 package org.ninkai.daynightcycle.commands;
 
-import org.mockbukkit.mockbukkit.MockBukkit;
-import org.mockbukkit.mockbukkit.ServerMock;
-import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockbukkit.mockbukkit.MockBukkit;
+import org.mockbukkit.mockbukkit.MockBukkitExtension;
+import org.mockbukkit.mockbukkit.MockBukkitInject;
+import org.mockbukkit.mockbukkit.ServerMock;
+import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import org.ninkai.daynightcycle.DayNightCycle;
 
 import java.util.List;
@@ -17,16 +21,27 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.ninkai.daynightcycle.commands.DayNightCycleConstants.*;
 
-@Disabled
+@ExtendWith(MockBukkitExtension.class)
 class DayNightCycleCommandTest {
 
-    private DayNightCycle plugin;
-    private PlayerMock player;
-    private Command command;
+    @MockBukkitInject
+    ServerMock server;
+    DayNightCycle plugin;
+    PlayerMock player;
+    Command command;
+
+    public static Stream<Arguments> provideCommands() {
+        return Stream.of(
+                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_INIT}, DAYNIGHTCYCLE_MESSAGE_INIT)
+//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_START}, DAYNIGHTCYCLE_MESSAGE_START),
+//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STOP}, DAYNIGHTCYCLE_MESSAGE_STOP),
+//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_RELOAD}, DAYNIGHTCYCLE_MESSAGE_RELOAD),
+//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STATUS}, DAYNIGHTCYCLE_MESSAGE_STATUS + "true")
+        );
+    }
 
     @BeforeEach
     void setUp() {
-        ServerMock server = MockBukkit.mock();
         plugin = MockBukkit.load(DayNightCycle.class);
         server.addSimpleWorld("world");
 
@@ -39,26 +54,10 @@ class DayNightCycleCommandTest {
         command = pluginCommand;
     }
 
-    @AfterEach
-    void tearDown() {
-        // Stop the mock server
-        MockBukkit.unmock();
-    }
-
-    public static Stream<Arguments> provideCommands() {
-        return Stream.of(
-                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_INIT}, DAYNIGHTCYCLE_MESSAGE_INIT)
-//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_START}, DAYNIGHTCYCLE_MESSAGE_START),
-//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STOP}, DAYNIGHTCYCLE_MESSAGE_STOP),
-//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_RELOAD}, DAYNIGHTCYCLE_MESSAGE_RELOAD),
-//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STATUS}, DAYNIGHTCYCLE_MESSAGE_STATUS + "true")
-        );
-    }
-
     @ParameterizedTest
     @MethodSource("provideCommands")
     void testOnCommand(String[] expectedCommand, String expectedMessage) {
-        boolean result = command.execute(plugin.getServer().getPlayer(player.getUniqueId()), DAYNIGHTCYCLE_COMMAND, expectedCommand);
+        boolean result = command.execute(player, DAYNIGHTCYCLE_COMMAND, expectedCommand);
         assertTrue(result);
         assertEquals(expectedMessage, player.nextMessage());
     }

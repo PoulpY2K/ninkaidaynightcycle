@@ -19,6 +19,14 @@ public class WeatherOptions implements ConfigurationSerializable {
     @NotNull
     private String city;
 
+    public static @NotNull WeatherOptions deserialize(Map<String, Object> args) throws NullPointerException {
+        return new WeatherOptions(
+                (Boolean) args.get("enabled"),
+                (String) args.get("api_key"),
+                (String) args.get("city")
+        );
+    }
+
     @Override
     public @NotNull Map<String, Object> serialize() {
         return Map.of(

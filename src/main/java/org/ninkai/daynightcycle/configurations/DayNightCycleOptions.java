@@ -17,21 +17,27 @@ public class DayNightCycleOptions implements ConfigurationSerializable {
 
     @NotNull
     private Boolean enabled;
+
     @NotNull
     private List<String> worlds;
+
     @NotNull
     private String timeZone;
+
     @NotNull
     private Integer timeOffset;
+
     @NotNull
     private LowLagOptions lowLag;
+
     @NotNull
     private String fixedTime;
+
     @NotNull
     private WeatherOptions weather;
 
     @SuppressWarnings("unchecked")
-    public static @NotNull DayNightCycleOptions deserialize(Map<String, Object> args) {
+    public static @NotNull DayNightCycleOptions deserialize(@NotNull Map<String, Object> args) {
 
         LowLagOptions lowLagOptions = new LowLagOptions(
                 (Boolean) args.get("low_lag.enabled"),

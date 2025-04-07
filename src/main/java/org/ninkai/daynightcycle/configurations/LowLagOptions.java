@@ -17,6 +17,13 @@ public class LowLagOptions implements ConfigurationSerializable {
     @NotNull
     private Integer intervalHour;
 
+    public static @NotNull LowLagOptions deserialize(Map<String, Object> args) throws NullPointerException {
+        return new LowLagOptions(
+                (Boolean) args.get("enabled"),
+                (Integer) args.get("interval_hour")
+        );
+    }
+
     @Override
     public @NotNull Map<String, Object> serialize() {
         return Map.of(
