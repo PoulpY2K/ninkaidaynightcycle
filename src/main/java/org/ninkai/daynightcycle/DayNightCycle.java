@@ -6,6 +6,7 @@ import org.bukkit.GameRule;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.ninkai.daynightcycle.commands.DayNightCycleCommand;
 import org.ninkai.daynightcycle.configurations.DayNightCycleOptions;
 import org.ninkai.daynightcycle.configurations.LowLagOptions;
@@ -26,6 +27,7 @@ public class DayNightCycle extends JavaPlugin {
 
     private DayNightCycleOptions pluginConfig;
     private PluginCommand dayNightCycleCommand;
+    private BukkitTask syncTask;
 
     /**
      * Registers serialization classes for configuration options and loads the configuration.
@@ -66,7 +68,7 @@ public class DayNightCycle extends JavaPlugin {
             prepareWorlds();
 
             // Create the sync task and set it
-            getServer().getScheduler().runTaskTimer(
+            syncTask = getServer().getScheduler().runTaskTimer(
                     this,
                     new SyncTimeRunnable(this, pluginConfig.getWorlds()),
                     0L,

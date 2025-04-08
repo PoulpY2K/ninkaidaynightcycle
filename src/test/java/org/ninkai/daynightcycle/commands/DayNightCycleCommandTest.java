@@ -15,11 +15,16 @@ import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import org.ninkai.daynightcycle.DayNightCycle;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.ninkai.daynightcycle.commands.DayNightCycleConstants.*;
+import static org.ninkai.daynightcycle.utils.SyncTimeUtils.getInstantTimeWithOffset;
 
 @ExtendWith(MockBukkitExtension.class)
 class DayNightCycleCommandTest {
@@ -32,11 +37,9 @@ class DayNightCycleCommandTest {
 
     public static Stream<Arguments> provideCommands() {
         return Stream.of(
-                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_INIT}, DAYNIGHTCYCLE_MESSAGE_INIT)
-//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_START}, DAYNIGHTCYCLE_MESSAGE_START),
-//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STOP}, DAYNIGHTCYCLE_MESSAGE_STOP),
-//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_RELOAD}, DAYNIGHTCYCLE_MESSAGE_RELOAD),
-//                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STATUS}, DAYNIGHTCYCLE_MESSAGE_STATUS + "true")
+                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_INIT}, DAYNIGHTCYCLE_MESSAGE_INIT),
+                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_RELOAD}, DAYNIGHTCYCLE_MESSAGE_RELOAD),
+                Arguments.of(new String[]{DAYNIGHTCYCLE_SUBCOMMAND_STATUS}, DAYNIGHTCYCLE_MESSAGE_STATUS + "true")
         );
     }
 
@@ -60,6 +63,52 @@ class DayNightCycleCommandTest {
         boolean result = command.execute(player, DAYNIGHTCYCLE_COMMAND, expectedCommand);
         assertTrue(result);
         assertEquals(expectedMessage, player.nextMessage());
+    }
+
+    @Test
+    void testOnStopAndStartCommand() {
+        String[] stopArgs = {DAYNIGHTCYCLE_SUBCOMMAND_STOP};
+        boolean stopResult = command.execute(player, DAYNIGHTCYCLE_COMMAND, stopArgs);
+
+        assertTrue(stopResult);
+        assertEquals(DAYNIGHTCYCLE_MESSAGE_STOP, player.nextMessage());
+
+        ZoneId timezone = ZoneId.of(plugin.getPluginConfig().getTimeZone());
+        int timeOffset = plugin.getPluginConfig().getTimeOffset();
+        ZonedDateTime finalCurrentTime = getInstantTimeWithOffset(timezone, timeOffset);
+
+        String[] startArgs = {DAYNIGHTCYCLE_SUBCOMMAND_START};
+        boolean startResult = command.execute(player, DAYNIGHTCYCLE_COMMAND, startArgs);
+
+        assertTrue(startResult);
+        assertEquals(DAYNIGHTCYCLE_MESSAGE_START.formatted(
+                        plugin.getPluginConfig().getTimeOffset(),
+                        plugin.getPluginConfig().getTimeZone(),
+                        finalCurrentTime.format(DateTimeFormatter.ofPattern("hh:mm:ss").withLocale(Locale.FRENCH))),
+                player.nextMessage()
+        );
+    }
+
+    @Test
+    void testOnStartCommandAlreadyStarted() {
+        String[] startArgs = {DAYNIGHTCYCLE_SUBCOMMAND_START};
+        boolean alreadyStartedResult = command.execute(player, DAYNIGHTCYCLE_COMMAND, startArgs);
+        assertFalse(alreadyStartedResult);
+        assertEquals(DAYNIGHTCYCLE_MESSAGE_ALREADY_STARTED, player.nextMessage());
+    }
+
+    @Test
+    void testOnStopCommandAlreadyStopped() {
+        String[] stopArgs = {DAYNIGHTCYCLE_SUBCOMMAND_STOP};
+        boolean stopResult = command.execute(player, DAYNIGHTCYCLE_COMMAND, stopArgs);
+        assertTrue(stopResult);
+        player.nextMessage();
+
+        // Execute the stop command without starting the cycle
+        boolean alreadyStoppedResult = command.execute(player, DAYNIGHTCYCLE_COMMAND, stopArgs);
+        // Assert that the command fails and the correct message is sent
+        assertFalse(alreadyStoppedResult);
+        assertEquals(DAYNIGHTCYCLE_MESSAGE_ALREADY_STOPPED, player.nextMessage());
     }
 
     @Test

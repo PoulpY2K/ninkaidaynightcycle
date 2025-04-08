@@ -53,9 +53,11 @@ class DayNightCycleTest {
         plugin.setDayNightCycleCommand(null);
 
         PluginCommand pluginCommand = plugin.getDayNightCycleCommand();
+        assertNull(pluginCommand);
+
         DayNightCycleCommand dayNightCycleCommand = new DayNightCycleCommand();
 
-        // Check that the plugin throws a NullPointerException when the command is null
+        //noinspection DataFlowIssue
         assertThrows(NullPointerException.class, () -> pluginCommand.setExecutor(dayNightCycleCommand));
     }
 
@@ -85,6 +87,7 @@ class DayNightCycleTest {
 
     @Test
     void prepareWorlds() {
+        assertNotNull(plugin.getPluginConfig());
         // Prepare the worlds specified in the config by setting the GameRule doDaylightCycle to false
         // and setting the time to the current time with offset in ticks
         plugin.prepareWorlds();
