@@ -1,59 +1,102 @@
 package org.ninkai.daynightcycle;
 
-import be.seeseemelk.mockbukkit.MockBukkit;
-import be.seeseemelk.mockbukkit.ServerMock;
-import org.junit.jupiter.api.*;
+import org.bukkit.GameRule;
+import org.bukkit.command.PluginCommand;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockbukkit.mockbukkit.MockBukkit;
+import org.mockbukkit.mockbukkit.MockBukkitExtension;
+import org.mockbukkit.mockbukkit.MockBukkitInject;
+import org.mockbukkit.mockbukkit.ServerMock;
+import org.ninkai.daynightcycle.commands.DayNightCycleCommand;
+import org.ninkai.daynightcycle.configurations.DayNightCycleOptions;
+import org.ninkai.daynightcycle.configurations.LowLagOptions;
+import org.ninkai.daynightcycle.configurations.WeatherOptions;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.ninkai.daynightcycle.utils.SyncTimeUtils.convertTimeToTicks;
+
+@ExtendWith(MockBukkitExtension.class)
 class DayNightCycleTest {
 
-    static ServerMock server;
-    static DayNightCycle plugin;
+    @MockBukkitInject
+    ServerMock server;
+    DayNightCycle plugin;
+    DayNightCycleOptions pluginOptions;
 
     @BeforeEach
     void setUp() {
-        // Start the mock server
-        server = MockBukkit.mock();
-        // Load your plugin
         plugin = MockBukkit.load(DayNightCycle.class);
-    }
+        server.addSimpleWorld("world");
 
-    @AfterEach
-    void tearDown() {
-        // Stop the mock server
-        MockBukkit.unmock();
-    }
-
-    @Test
-    void testPluginLoad() {
-        Assertions.assertNotNull(plugin, "Plugin should be loaded");
-    }
-
-    @Test
-    void testPluginEnable() {
-        // Check if the plugin is enabled
-        Assertions.assertTrue(plugin.isEnabled(), "Plugin should be enabled");
+        pluginOptions = new DayNightCycleOptions(
+                true, // enabled
+                List.of("world"), // worlds
+                "Europe/Paris", // timeZone
+                0, // timeOffset
+                new LowLagOptions(false, 0), // lowLag
+                "", // fixedTime
+                new WeatherOptions(false, "dummyApiKey", "Paris") // weather
+        );
+        plugin.setPluginConfig(pluginOptions);
     }
 
     @Test
-    void testPluginDisable() {
-        // Disable the plugin
-        plugin.setEnabled(false);
-        // Check if the plugin is disabled
-        Assertions.assertFalse(plugin.isEnabled(), "Plugin should be disabled");
+    void testPluginCommandIsNull() {
+        // Set the plugin configuration to null
+        plugin.setDayNightCycleCommand(null);
+
+        PluginCommand pluginCommand = plugin.getDayNightCycleCommand();
+        assertNull(pluginCommand);
+
+        DayNightCycleCommand dayNightCycleCommand = new DayNightCycleCommand();
+
+        //noinspection DataFlowIssue
+        assertThrows(NullPointerException.class, () -> pluginCommand.setExecutor(dayNightCycleCommand));
     }
 
     @Test
-    void testSaveDefaultConfig() {
-        // Check if the default config is saved
-        plugin.saveDefaultConfig();
-        Assertions.assertNotNull(plugin.getConfig(), "Default config should be saved");
+    void testPluginConfigurationBadValues() {
+        // Set the plugin configuration to null
+        plugin.setPluginConfig(null);
+
+        // Check that the plugin throws a NullPointerException when the configuration is null
+        assertThrows(NullPointerException.class, () -> plugin.onEnable());
     }
 
     @Test
-    void testConfigLoad() {
-        // Check if the config is loaded correctly
-        Assertions.assertNotNull(plugin.getConfig(), "Config should be loaded");
-        Assertions.assertTrue(plugin.getConfig().isSet("enabled"), "Config should contain 'enabled'");
+    void testGetWorldTime() {
+        // Get the current time in the default time zone
+        ZoneId zoneId = ZoneId.of("Europe/Paris");
+        Instant instant = Instant.now();
+        ZonedDateTime testTime = ZonedDateTime.ofInstant(instant, zoneId);
+
+        ZonedDateTime currentTime = plugin.getWorldTime();
+
+        // Assert that the current time is not null
+        assertNotNull(currentTime);
+        // Assert that the current time is equal to the test time
+        assertEquals(testTime.getSecond(), currentTime.getSecond());
+    }
+
+    @Test
+    void prepareWorlds() {
+        assertNotNull(plugin.getPluginConfig());
+        // Prepare the worlds specified in the config by setting the GameRule doDaylightCycle to false
+        // and setting the time to the current time with offset in ticks
+        plugin.prepareWorlds();
+
+        // Check that the GameRule doDaylightCycle is set to false
+        assertNotEquals(Boolean.TRUE, server.getWorlds().getFirst().getGameRuleValue(GameRule.DO_DAYLIGHT_CYCLE));
+
+        // Check that the time is set to the current time with offset in ticks
+        long expectedTime = convertTimeToTicks(plugin.getWorldTime());
+        assertEquals(expectedTime, server.getWorlds().getFirst().getTime());
     }
 }

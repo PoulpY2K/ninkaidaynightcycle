@@ -5,18 +5,37 @@ import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ninkai.daynightcycle.DayNightCycle;
+import org.ninkai.daynightcycle.tasks.SyncTimeRunnable;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.ninkai.daynightcycle.commands.DayNightCycleConstants.*;
+import static org.ninkai.daynightcycle.configurations.DayNightCycleOptions.saveDayNightCycleConfig;
+import static org.ninkai.daynightcycle.utils.SyncTimeUtils.convertTimeToTicks;
+import static org.ninkai.daynightcycle.utils.SyncTimeUtils.getInstantTimeWithOffset;
 
 public class DayNightCycleCommand implements TabExecutor {
 
+    /**
+     * Handles tab completion for the DayNightCycle command.
+     * It provides suggestions based on the arguments provided.
+     *
+     * @param sender  The command sender.
+     * @param command The command being executed.
+     * @param label   The alias of the command used.
+     * @param args    The arguments passed to the command.
+     * @return A list of suggestions for tab completion.
+     */
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         // Check if the sender has permission to use the command
@@ -38,6 +57,16 @@ public class DayNightCycleCommand implements TabExecutor {
         return List.of();
     }
 
+    /**
+     * Executes the command for the DayNightCycle plugin.
+     * It handles the subcommands and their respective actions.
+     *
+     * @param sender  The command sender.
+     * @param command The command being executed.
+     * @param label   The alias of the command used.
+     * @param args    The arguments passed to the command.
+     * @return true if the command was executed successfully, false otherwise.
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         // Check if args are present
@@ -47,6 +76,9 @@ public class DayNightCycleCommand implements TabExecutor {
         }
 
         Server server = sender.getServer();
+        DayNightCycle plugin = (DayNightCycle) server.getPluginManager().getPlugin(DAYNIGHTCYCLE_PLUGIN_NAME);
+        assert plugin != null;
+
         // Set doDaylightCycle to false
         switch (args[0].toLowerCase()) {
             case DAYNIGHTCYCLE_SUBCOMMAND_INIT:
@@ -54,29 +86,112 @@ public class DayNightCycleCommand implements TabExecutor {
                 sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_INIT);
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_START:
-                server.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false));
-                sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_START);
-                break;
+                if (plugin.getSyncTask() != null && !plugin.getSyncTask().isCancelled()) {
+                    sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_ALREADY_STARTED);
+                    return false;
+                }
+                return handleStartCommand(plugin, sender);
             case DAYNIGHTCYCLE_SUBCOMMAND_STOP:
-                server.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true));
-                sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_STOP);
-                break;
+                // Stop the task if it is running
+                if (plugin.getSyncTask() == null || plugin.getSyncTask().isCancelled()) {
+                    sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_ALREADY_STOPPED);
+                    return false;
+                }
+                return handleStopCommand(plugin, server, sender);
             case DAYNIGHTCYCLE_SUBCOMMAND_STATUS:
                 sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_STATUS + (server.getWorlds().getFirst().getGameRuleValue(GameRule.DO_DAYLIGHT_CYCLE)));
                 break;
             case DAYNIGHTCYCLE_SUBCOMMAND_RELOAD:
                 // Reload the plugin configuration
-                Plugin plugin = sender.getServer().getPluginManager().getPlugin(DAYNIGHTCYCLE_PLUGIN_NAME);
-                if (plugin != null) {
-                    plugin.reloadConfig();
-                }
-                sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_RELOAD);
-                break;
+                return handleReloadCommand(plugin, sender);
             default:
                 sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_UNKNOWN);
                 return false;
         }
 
         return true;
+    }
+
+    /**
+     * Executes the start command for the DayNightCycle plugin.
+     * It initializes the task to synchronize time in the specified worlds.
+     *
+     * @param plugin The DayNightCycle plugin instance.
+     * @param sender The command sender.
+     * @return true if the command was executed successfully, false otherwise.
+     */
+    private boolean handleStartCommand(DayNightCycle plugin, CommandSender sender) {
+        ZonedDateTime time = createTask(plugin, sender);
+        plugin.getPluginConfig().setEnabled(true);
+        saveDayNightCycleConfig(plugin, plugin.getPluginConfig().serialize());
+        sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_START.formatted(
+                plugin.getPluginConfig().getTimeOffset(),
+                plugin.getPluginConfig().getTimeZone(),
+                time.format(DateTimeFormatter.ofPattern("hh:mm:ss").withLocale(Locale.FRENCH))
+        ));
+        return true;
+    }
+
+    /**
+     * Executes the stop command for the DayNightCycle plugin.
+     * It cancels the task and sets the game rule to true in all worlds included in pluginConfig.
+     *
+     * @param plugin The DayNightCycle plugin instance.
+     * @param server The server instance.
+     */
+    private boolean handleStopCommand(DayNightCycle plugin, Server server, CommandSender sender) {
+        plugin.getSyncTask().cancel();
+        plugin.getPluginConfig().setEnabled(false);
+        saveDayNightCycleConfig(plugin, plugin.getPluginConfig().serialize());
+        // Set doDaylightCycle to true in all worlds included in pluginConfig
+        server.getWorlds().stream()
+                .filter(world -> plugin.getPluginConfig().getWorlds().contains(world.getName()))
+                .forEach(world ->
+                        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true)
+                );
+        sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_STOP);
+        return true;
+    }
+
+    /**
+     * Executes the reload command for the DayNightCycle plugin.
+     * It reloads the plugin configuration and updates the task if necessary.
+     *
+     * @param plugin The DayNightCycle plugin instance.
+     */
+    private boolean handleReloadCommand(DayNightCycle plugin, CommandSender sender) {
+        plugin.reloadConfig();
+        plugin.loadConfiguration();
+        sender.sendMessage(DAYNIGHTCYCLE_MESSAGE_RELOAD);
+        return true;
+    }
+
+    /**
+     * Creates a task to synchronize time in the specified worlds.
+     * The task is scheduled to run at a fixed interval based on the cycle period.
+     *
+     * @param plugin The DayNightCycle plugin instance.
+     * @param sender The command sender.
+     * @return The current time with offset for logging purposes.
+     */
+    private ZonedDateTime createTask(DayNightCycle plugin, CommandSender sender) {
+        // Set real time in worlds listed in config
+        ZoneId timezone = ZoneId.of(plugin.getPluginConfig().getTimeZone());
+        int timeOffset = plugin.getPluginConfig().getTimeOffset();
+        ZonedDateTime finalCurrentTime = getInstantTimeWithOffset(timezone, timeOffset);
+
+        sender.getServer().getWorlds().stream()
+                .filter(world -> plugin.getPluginConfig().getWorlds().contains(world.getName()))
+                .forEach(world -> {
+                    world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, Boolean.FALSE);
+                    world.setTime(convertTimeToTicks(finalCurrentTime));
+                });
+
+        // Create sync task
+        BukkitTask task = plugin.getServer().getScheduler().runTaskTimer(plugin, new SyncTimeRunnable(plugin, plugin.getPluginConfig().getWorlds()), 0L, DAYNIGHTCYCLE_CYCLE_REAL_SECOND);
+        plugin.setSyncTask(task);
+
+        // Return time for logging purposes
+        return finalCurrentTime;
     }
 }
